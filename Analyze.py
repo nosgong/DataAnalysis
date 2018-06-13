@@ -10,7 +10,7 @@
 
 # #### 二、数据加工
 
-# In[14]:
+# In[18]:
 
 
 #导入函数库
@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[15]:
+# In[19]:
 
 
 #文件导入
@@ -29,26 +29,32 @@ titanic_df = pd.read_csv('titanic-data.csv')
 
 # >数据检测
 
-# In[16]:
+# * 检验数据是否导入成功
+
+# In[20]:
 
 
 titanic_df.head()
 
 
-# In[17]:
+# * 通过对样本数据的观察，发现样本中Age、Cabin、Embarked三个字段中存在NAN值，而客舱号字段Cabin用处不大，而本次分析中可能用到的为Age、Embarked两个字段，因此剔除数据样本中两个字段存在空的数据。
+
+# In[21]:
 
 
 titanic_df.dropna(subset=['Age', 'Embarked'], inplace=True)#剔除无效数据
 titanic_df.info()
 
 
+# *从数据集返回的信息可看出，目前数据集已保持了一致性。*
+
 # >数据处理
 
-# In[18]:
+# In[22]:
 
 
 #绘制图形
-def plot_charting(data, kd, title, x, y, stack=0):
+def plot_charting(data, kd, title, x=None, y=None, stack=0):
     '''
     data:图标数据
     kd:图形类型
@@ -61,16 +67,18 @@ def plot_charting(data, kd, title, x, y, stack=0):
         data.unstack().plot(kind=kd)
     else:
         if kd=='pie':
-            data.plot(kind=kd, subplots=True)
+            data.plot(kind=kd, subplots=True, autopct='%.0f%%', figsize=(5,5))
         else:
             data.plot(kind=kd)
     plt.title(title)
-    plt.xlabel(x)
-    plt.ylabel(y)
+    if x is not None:
+        plt.xlabel(x)
+    if y is not None:
+        plt.ylabel(y)
     plt.show()
 
 
-# In[19]:
+# In[23]:
 
 
 #获取统计结果
@@ -92,7 +100,7 @@ def get_statistics_result(group_df, columns):
     return survival_rate
 
 
-# In[20]:
+# In[24]:
 
 
 #获取结果数据(单因素)
@@ -112,7 +120,7 @@ def get_result_with_one_factor(factor, kd):
     plot_charting(survival_rate, kd, factor + ' Survival rate', 'factor-' + factor, 'rate')
 
 
-# In[21]:
+# In[25]:
 
 
 #获取结果数据(双因素)
@@ -127,9 +135,21 @@ def get_result_with_double_factor(factors, kd):
 
 
 # ### 三、数据分析
+# #### 观察样本男女比例
+
+# In[26]:
+
+
+sex_count_df = titanic_df.groupby('Sex')['PassengerId'].count()
+plot_charting(sex_count_df, 'pie', 'Sex Count')
+
+
+# 分析：  
+#     由上图可见，男性乘客比例远远大于女性乘客。
+
 # #### 判断舱室等级对生存率的影响
 
-# In[22]:
+# In[27]:
 
 
 get_result_with_one_factor('Pclass', 'bar')
@@ -140,10 +160,10 @@ get_result_with_one_factor('Pclass', 'bar')
 
 # #### 判断性别对生存率的影响
 
-# In[23]:
+# In[28]:
 
 
-get_result_with_one_factor('Sex', 'pie')
+get_result_with_one_factor('Sex', 'bar')
 
 
 # 分析：  
@@ -151,12 +171,12 @@ get_result_with_one_factor('Sex', 'pie')
 
 # #### 判断年龄对生还率的影响
 
-# In[24]:
+# In[29]:
 
 
 bins = np.arange(0,100,10)
 titanic_df['Age_df'] = pd.cut(titanic_df['Age'], bins, right=False)
-get_result_with_one_factor('Age_df', 'line')
+get_result_with_one_factor('Age_df', 'bar')
 
 
 # 分析：  
@@ -164,7 +184,7 @@ get_result_with_one_factor('Age_df', 'line')
 
 # #### 判断舱室级别以及性别的综合因素对生还率的影响
 
-# In[25]:
+# In[30]:
 
 
 #双因素
